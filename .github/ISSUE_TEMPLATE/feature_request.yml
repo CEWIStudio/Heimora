@@ -1,0 +1,11 @@
+name: Feature request / Idee
+description: Suggest an improvement to Heimora
+title: "[Feature]: "
+body:
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Improvement / Verbetering
+      description: Describe the problem and your proposed solution. Do not include private data.
+    validations:
+      required: true

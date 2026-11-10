@@ -8,4 +8,4 @@ Local records use Windows DPAPI for the current Windows account. This does not p
 
 The PostgreSQL integration currently shares connection metadata and credential references. Secrets and audit logs remain local. Central application users, server-enforced permissions and a connection gateway are not implemented.
 
-See [SECURITY-REVIEW.md](SECURITY-REVIEW.md) for the scope and limitations of the local checks. Live RDP/SSH authentication, live PostgreSQL migration, clean-machine installation and an independent penetration test remain outstanding.
+See [SECURITY-REVIEW.md](docs/SECURITY-REVIEW.md) for the scope and limitations of the local checks. Live RDP/SSH authentication, live PostgreSQL migration, clean-machine installation and an independent penetration test remain outstanding.

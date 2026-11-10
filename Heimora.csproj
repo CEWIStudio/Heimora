@@ -16,15 +16,16 @@
     <ApplicationIcon>assets\app.ico</ApplicationIcon>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="*.cs" />
+    <Compile Include="src\**\*.cs" />
+    <Compile Include="tests\**\*.cs" />
     <PackageReference Include="Npgsql" Version="10.0.3" />
     <PackageReference Include="Microsoft.Data.Sqlite" Version="10.0.14" />
     <PackageReference Include="SQLitePCLRaw.bundle_e_sqlite3" Version="3.0.5" />
     <Content Include="vendor\**\*" CopyToOutputDirectory="PreserveNewest" />
     <Content Include="README.md" CopyToOutputDirectory="PreserveNewest" />
-    <Content Include="SECURITY-REVIEW.md" CopyToOutputDirectory="PreserveNewest" />
-    <Content Include="CENTRAL-SECURITY-DESIGN.md" CopyToOutputDirectory="PreserveNewest" />
-    <Content Include="NAME-AND-BRANDING.md" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="docs\SECURITY-REVIEW.md" Link="SECURITY-REVIEW.md" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="docs\CENTRAL-SECURITY-DESIGN.md" Link="CENTRAL-SECURITY-DESIGN.md" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="docs\NAME-AND-BRANDING.md" Link="NAME-AND-BRANDING.md" CopyToOutputDirectory="PreserveNewest" />
     <Content Include="assets\app-icon.png" CopyToOutputDirectory="PreserveNewest" />
     <Content Include="languages\*.json" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>

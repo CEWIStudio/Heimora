@@ -36,16 +36,20 @@ Een nieuw of gewijzigd remote doel vraagt toestemming voordat opgeslagen credent
 
 Maak vooraf een database en een aparte databasegebruiker. De app maakt public.heimora_vault aan. Een aanwezige tabel uit het voorgaande opslagformaat wordt transactioneel hernoemd; daarvoor zijn eigenaarsrechten nodig. Bij twee aanwezige kluistabellen wordt automatische omzetting geweigerd. Er wordt niet stilzwijgend samengevoegd.
 
-De standaardverbinding controleert TLS-certificaat en servernaam. Wachtwoorden en auditlogs blijven in deze preview lokaal. Een lege serverkluis kan lokale metadata en koppelingen overnemen met behoud van bron en ID's. Er is geen offline synchronisatie. Centrale gebruikers, rollen en gateway staan beschreven in CENTRAL-SECURITY-DESIGN.md en zijn nog niet gebouwd.
+De standaardverbinding controleert TLS-certificaat en servernaam. Wachtwoorden en auditlogs blijven in deze preview lokaal. Een lege serverkluis kan lokale metadata en koppelingen overnemen met behoud van bron en ID's. Er is geen offline synchronisatie. Centrale gebruikers, rollen en gateway staan beschreven in [CENTRAL-SECURITY-DESIGN.md](docs/CENTRAL-SECURITY-DESIGN.md) en zijn nog niet gebouwd.
 
 ## Naam en help
 
-F1 opent de doorzoekbare offline help. Onder Over Heimora staat onze combinatie van Heimdall en aurora uitgelegd. NAME-AND-BRANDING.md bevat de kleuren en achtergrondbronnen. Beheer > Instellingen past eigen branding aan. Het splashscherm blijft minimaal vijf seconden zichtbaar terwijl laden doorgaat.
+F1 opent de doorzoekbare offline help. Onder Over Heimora staat onze combinatie van Heimdall en aurora uitgelegd. [NAME-AND-BRANDING.md](docs/NAME-AND-BRANDING.md) bevat de kleuren en achtergrondbronnen. Beheer > Instellingen past eigen branding aan. Het splashscherm blijft minimaal vijf seconden zichtbaar terwijl laden doorgaat.
 
 ## Bouwen en controleren
 
 Gebruik .NET 10 SDK en Inno Setup 6 op de ontwikkel-pc. build.ps1 publiceert zelfstandig voor Windows x64, voert de zelftests uit en maakt de installer. Een optionele PackageSource kan naar een lokale NuGet-feed verwijzen. --data-dir geeft een geïsoleerde gegevensmap; --self-test voert lokale controles uit. HEIMORA_SSH_NETWORK_TEST=1 activeert de aanvullende SSH-protocoltest.
 
-Echte RDP-/SSH-authenticatie, live PostgreSQL, een volledige installatie/update/herstel op een schone pc en een onafhankelijke pentest zijn nog niet volledig gevalideerd. SECURITY-REVIEW.md beschrijft de beveiligingsgrenzen. Er is geen garantie op afwezigheid van kwetsbaarheden.
+Echte RDP-/SSH-authenticatie, live PostgreSQL, een volledige installatie/update/herstel op een schone pc en een onafhankelijke pentest zijn nog niet volledig gevalideerd. [SECURITY-REVIEW.md](docs/SECURITY-REVIEW.md) beschrijft de beveiligingsgrenzen. Er is geen garantie op afwezigheid van kwetsbaarheden.
 
 Licenties van meegeleverde componenten staan in vendor. Persoonlijke gegevens blijven bij verwijderen bewaard.
+
+## Repository structure
+
+src/ contains the application code, grouped into UI, Data, Security and Connections. tests/ contains the built-in self-tests, which remain part of the application and run with --self-test. docs/ contains design, branding and security documentation. assets/, languages/ and vendor/ contain runtime resources and third-party notices. Heimora.csproj, build.ps1 and installer.iss remain in the repository root.

@@ -14,7 +14,7 @@ internal sealed class SplashForm : LocalizedForm
         DoubleBuffered = true; FormBorderStyle = FormBorderStyle.None; ShowInTaskbar = false;
         StartPosition = FormStartPosition.CenterScreen; ClientSize = new Size(620, 360);
         Font = new Font("Segoe UI", 10); BackColor = ColorTranslator.FromHtml(branding.PrimaryColor);
-        ForeColor = BrandingSettings.Contrast(BackColor); accent = Color.FromArgb(25, 201, 176);
+        ForeColor = BrandingSettings.Contrast(BackColor); accent = ColorTranslator.FromHtml(branding.AccentColor);
         Text = branding.DisplayName; logo = branding.Logo() ?? UiIcons.DefaultLogo();
         var heading = new Label { Text = branding.DisplayName, Font = new Font("Segoe UI Semibold", 23), Location = new Point(154, 58), Size = new Size(420, 90), AutoEllipsis = true, BackColor = Color.Transparent };
         var subtitle = new Label { Text = "Al je verbindingen. Eén werkplek.", Location = new Point(47, 183), Size = new Size(520, 26), Font = new Font("Segoe UI", 12), BackColor = Color.Transparent };
@@ -24,16 +24,42 @@ internal sealed class SplashForm : LocalizedForm
         animation.Tick += (_, _) => { position = (position + 8) % 720; Invalidate(new Rectangle(47, 292, 526, 6)); };
         Shown += (_, _) => animation.Start();
     }
+    protected override void OnSizeChanged(EventArgs e)
+    {
+        base.OnSizeChanged(e);
+        if (ClientSize.Width < 1 || ClientSize.Height < 1) return;
+        using var outline = PremiumUi.Rounded(ClientRectangle, (int)(24 * DeviceDpi / 96f));
+        var previous = Region; Region = new Region(outline); previous?.Dispose();
+    }
+    protected override void OnPaintBackground(PaintEventArgs e)
+    {
+        using var background = new LinearGradientBrush(ClientRectangle, BackColor, ControlPaint.Dark(BackColor, .18f), 35f);
+        e.Graphics.FillRectangle(background, ClientRectangle);
+        e.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
+        using var glow = new SolidBrush(Color.FromArgb(12, accent));
+        e.Graphics.FillEllipse(glow, Width - 280, -150, 440, 440);
+        using var halo = new Pen(Color.FromArgb(20, accent), 1);
+        e.Graphics.DrawEllipse(halo, Width - 240, -110, 360, 360);
+    }
     public void SetPhase(string text) { phase.Text = UiText.T(text); Refresh(); }
     protected override void OnPaint(PaintEventArgs e)
     {
         base.OnPaint(e); var g = e.Graphics; g.SmoothingMode = SmoothingMode.AntiAlias; g.InterpolationMode = InterpolationMode.HighQualityBicubic;
+        using var tile = PremiumUi.Rounded(new Rectangle(35, 47, 106, 106), 22);
+        using var tileFill = new SolidBrush(Color.FromArgb(10, ForeColor)); g.FillPath(tileFill, tile);
+        using var tileBorder = new Pen(Color.FromArgb(28, ForeColor)); g.DrawPath(tileBorder, tile);
         float scale = Math.Min(82f / logo.Width, 82f / logo.Height);
         g.DrawImage(logo, 47 + (82 - logo.Width * scale) / 2, 59 + (82 - logo.Height * scale) / 2, logo.Width * scale, logo.Height * scale);
-        using var track = new SolidBrush(Color.FromArgb(38, ForeColor)); g.FillRectangle(track, 47, 292, 526, 4);
+        using var trackPath = PremiumUi.Rounded(new Rectangle(47, 292, 526, 4), 2);
+        using var track = new SolidBrush(Color.FromArgb(28, ForeColor)); g.FillPath(track, trackPath);
         int start = Math.Clamp(position - 120, 0, 526), end = Math.Clamp(position, 0, 526);
-        using var fill = new SolidBrush(accent); g.FillRectangle(fill, 47 + start, 292, end - start, 4);
-        using var border = new Pen(Color.FromArgb(40, ForeColor)); g.DrawRectangle(border, 0, 0, ClientSize.Width - 1, ClientSize.Height - 1);
+        if (end > start)
+        {
+            using var fillPath = PremiumUi.Rounded(new Rectangle(47 + start, 292, end - start, 4), 2);
+            using var fill = new SolidBrush(accent); g.FillPath(fill, fillPath);
+        }
+        using var edge = PremiumUi.Rounded(new Rectangle(1, 1, ClientSize.Width - 3, ClientSize.Height - 3), (int)(24 * DeviceDpi / 96f));
+        using var border = new Pen(Color.FromArgb(45, ForeColor)); g.DrawPath(border, edge);
     }
     protected override void Dispose(bool disposing)
     {

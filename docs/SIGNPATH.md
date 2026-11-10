@@ -9,7 +9,7 @@ Heimora is a plausible applicant, not an approved project. The [Foundation condi
 | Public, maintained open-source project | Public repository, GPL-3.0 licence, recent commits and preview releases v0.7.1 and v0.7.2. Confirm ownership of all original code and absence of commercial dual-licensing. |
 | Open-source dependencies | Notices are present in vendor/ for PuTTY 0.85, .NET, Npgsql, SQLite and SQLitePCLRaw. Full transitive dependency/licence and bundled-binary provenance review is still required. Windows RDP/DPAPI are operating-system components; confirm acceptance under the System Libraries exception with SignPath. |
 | Described, released application | README and release pages describe functionality and preview limitations. The app supports user-selected remote connections; it does not intentionally scan or exploit targets. This is not an exhaustive security audit. |
-| Verifiable hosted builds | windows-build.yml builds from checkout on windows-2022 using public NuGet packages and the existing build.ps1. Its first actual GitHub run still needs to pass. No local .env or signing token is required. |
+| Verifiable hosted builds | windows-build.yml builds from checkout on windows-2022 using public NuGet packages and the existing build.ps1. The preparation-branch and main builds passed on 10 November 2026. No local .env or signing token is required. |
 | Team accountability and MFA | Roles are proposed in CODE_SIGNING.md. Repository ownership, all write-access accounts' MFA and SignPath MFA must be verified by the owner. |
 | Privacy, uninstall and signing policy | CODE_SIGNING.md describes intended data handling. Inno Setup supplies uninstall support; complete installation/update/uninstall validation is outstanding. |
 | Foundation acceptance | Not requested or granted. Complete the application at https://signpath.org/apply after reviewing these gaps. |
@@ -20,7 +20,34 @@ The Windows build runs on main pushes, pull requests, version tags and manual di
 
 The required NuGet runtime/package versions were confirmed present on nuget.org during preparation. GitHub's runner image includes Inno Setup 6. The GUI/RDP/embedded-PuTTY self-tests have passed locally, but may expose runner-specific limitations. Do not skip failed tests merely to get a signing artifact. Test logs are uploaded even on failure. Live remote authentication and PostgreSQL are not covered.
 
-Local actionlint validation and the application/installer version check passed. Pushing the preparation branch was rejected by GitHub because the local personal access token cannot create workflows. Grant this repository's fine-grained token Workflows: Read and write (in addition to Contents: Read and write), then push prepare-signpath. For a classic token GitHub calls the required permission workflow. No hosted build has run yet. Merge the reviewed preparation or open a pull request to trigger its first hosted build; workflow_dispatch becomes available once the workflow is on the default branch.
+Local actionlint validation and the application/installer version check passed. The owner granted Workflows: Read and write to the local token, resolving the initial push rejection. prepare-signpath was pushed and merged into main at commit 712d22ee822a3d6183cb94b796393786ba380c40. Both hosted runs passed, including self-tests, installer, checksums and artifact uploads:
+
+- Preparation branch: https://github.com/CEWIStudio/Heimora/actions/runs/42816151224
+- Main: https://github.com/CEWIStudio/Heimora/actions/runs/42817343922
+
+## Resume the application
+
+Status saved on 10 November 2026: the application form was inspected, but nothing was submitted. No SignPath approval, account configuration or active signing is in place. Existing preview releases remain unsigned. Browser form state was not retained; reopen https://signpath.org/apply.
+
+Still needed from the owner:
+- First name, last name and the email address to use for SignPath.
+- Whether applying as an individual developer or a company, and company name if applicable.
+- Confirmation that all GitHub accounts with write access use MFA; SignPath MFA must also be configured during onboarding.
+- Any genuine external users, endorsements or other reputation evidence. Do not invent these.
+- Explicit confirmation of the terms and personal-data processing consent before submitting the form. Leave optional marketing consent unchecked unless requested.
+
+Prepared application fields:
+- Project name: Heimora.
+- Repository/homepage: https://github.com/CEWIStudio/Heimora
+- Download page with policy link: https://github.com/CEWIStudio/Heimora#code-signing-policy
+- Privacy policy: https://github.com/CEWIStudio/Heimora/blob/main/CODE_SIGNING.md#privacy
+- Tagline: An open-source Windows workspace for managing RDP, SSH, web connections and reusable credentials.
+- Description: Heimora combines remote connections, folders and reusable credentials in a Windows desktop workspace. It provides a local encrypted vault and optional PostgreSQL metadata storage. The project is GPL-3.0 licensed and currently in preview. Application binaries and installers are built and tested using GitHub-hosted Windows runners.
+- Reputation: Newly public repository created on 10 November 2026; two preview releases. At the time checked, installer downloads totalled four (v0.7.1: one; v0.7.2: three), with zero stars and forks. No established community or independent endorsements have been verified. Refresh these figures before submission; they may be internal tests rather than independent users.
+- Build system: GitHub Actions.
+- Discovery: ChatGPT / Codex, followed by review of official SignPath terms and documentation.
+
+Next step: collect the missing owner details, refresh reputation evidence, complete the form accurately and obtain confirmation before accepting terms/submitting. SignPath can require more public project history. Do not activate signing or claim sponsorship before approval.
 
 The 14-day unsigned artifacts are for inspection only. Do not attach them to a release claiming they are signed. GitHub-hosted standard runners for public repositories are normally free; review GitHub billing/settings before enabling additional services.
 

@@ -88,6 +88,28 @@ public static class SelfTest
                 Check(Children(main).OfType<Label>().Where(x => x.Name == "DashboardCount").Select(x => x.Text).Order().SequenceEqual(new[] { "0", "1", "1" }), "Dashboard counters reflect loaded vault contents");
                 Check(tree.Nodes.Count == 1 && tree.Nodes[0].Nodes.Count == 1, "Nested folder tree rendered");
                 Check(tree.ImageList != null && tree.Nodes[0].ImageKey.StartsWith("folder:") && tree.Nodes[0].Text == "Lab", "Folder tree uses colored icons with clean captions");
+                var sessionTabs = Children(main).OfType<PremiumTabControl>().Single();
+                var tabRect = sessionTabs.GetTabRect(0);
+                var mouseMove = typeof(PremiumTabControl).GetMethod("OnMouseMove", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic)!;
+                mouseMove.Invoke(sessionTabs, [new MouseEventArgs(MouseButtons.None, 0, tabRect.X + 50, tabRect.Y + 6, 0)]);
+                using (var hoverImage = new Bitmap(sessionTabs.Width, sessionTabs.Height))
+                {
+                    sessionTabs.DrawToBitmap(hoverImage, new Rectangle(Point.Empty, sessionTabs.Size));
+                    Check(sessionTabs.HoveredIndex == 0 && sessionTabs.SelectedIndex == 0 && hoverImage.GetPixel(tabRect.X + 50, tabRect.Y + 6).ToArgb() == Color.FromArgb(229, 238, 249).ToArgb(), "Tab hover uses a soft background without changing the active session");
+                }
+                using (var image = new Bitmap(main.Width, main.Height)) { main.DrawToBitmap(image, new Rectangle(Point.Empty, main.Size)); image.Save(Path.Combine(Path.GetDirectoryName(output)!, "qa-main-hover.png")); }
+                typeof(PremiumTabControl).GetMethod("OnMouseLeave", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic)!.Invoke(sessionTabs, [EventArgs.Empty]);
+                Check(sessionTabs.HoveredIndex == -1, "Tab hover clears when the pointer leaves");
+                using (var secondTab = new TabPage("Test session"))
+                {
+                    sessionTabs.TabPages.Add(secondTab);
+                    var secondRect = sessionTabs.GetTabRect(1);
+                    mouseMove.Invoke(sessionTabs, [new MouseEventArgs(MouseButtons.None, 0, secondRect.X + 50, secondRect.Y + 6, 0)]);
+                    using var image = new Bitmap(sessionTabs.Width, sessionTabs.Height);
+                    sessionTabs.DrawToBitmap(image, new Rectangle(Point.Empty, sessionTabs.Size));
+                    Check(sessionTabs.HoveredIndex == 1 && sessionTabs.SelectedIndex == 0 && image.GetPixel(secondRect.X + 50, secondRect.Y + 6).ToArgb() == Color.FromArgb(229, 238, 249).ToArgb(), "Inactive tab hover renders independently of the active session");
+                    sessionTabs.TabPages.Remove(secondTab);
+                }
                 search.Text = "127.0.0.1"; Check(tree.Nodes.Count == 1 && tree.Nodes[0].Nodes.Count == 1, "IP search retains ancestor folder");
                 search.Text = "no-such-host"; Check(tree.Nodes.Count == 0, "Search excludes nonmatches"); search.Clear();
                 using (var image = new Bitmap(main.Width, main.Height)) { main.DrawToBitmap(image, new Rectangle(Point.Empty, main.Size)); image.Save(Path.Combine(Path.GetDirectoryName(output)!, "qa-main.png")); }

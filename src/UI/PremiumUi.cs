@@ -13,6 +13,41 @@ internal static class PremiumUi
     }
 }
 
+internal sealed class PremiumTabControl : TabControl
+{
+    public int HoveredIndex { get; private set; } = -1;
+    public PremiumTabControl()
+    {
+        SetStyle(ControlStyles.UserPaint | ControlStyles.AllPaintingInWmPaint | ControlStyles.OptimizedDoubleBuffer | ControlStyles.ResizeRedraw, true);
+    }
+    protected override void OnPaintBackground(PaintEventArgs e) => e.Graphics.Clear(PremiumUi.Canvas);
+    protected override void OnPaint(PaintEventArgs e)
+    {
+        for (int i = 0; i < TabCount; i++)
+        {
+            var item = new DrawItemEventArgs(e.Graphics, Font, GetTabRect(i), i, i == SelectedIndex ? DrawItemState.Selected : DrawItemState.None);
+            OnDrawItem(item);
+            if (i == SelectedIndex && Focused && ShowFocusCues) ControlPaint.DrawFocusRectangle(e.Graphics, Rectangle.Inflate(GetTabRect(i), -6, -5));
+        }
+    }
+    protected override void OnMouseMove(MouseEventArgs e)
+    {
+        base.OnMouseMove(e);
+        int next = -1;
+        for (int i = 0; i < TabCount; i++) if (GetTabRect(i).Contains(e.Location)) { next = i; break; }
+        if (next == HoveredIndex) return;
+        HoveredIndex = next; Invalidate();
+    }
+    protected override void OnMouseLeave(EventArgs e)
+    {
+        base.OnMouseLeave(e); HoveredIndex = -1; Invalidate();
+    }
+    protected override void OnSelectedIndexChanged(EventArgs e)
+    {
+        base.OnSelectedIndexChanged(e); Invalidate();
+    }
+}
+
 internal sealed class PremiumButton : Button
 {
     private bool hover;

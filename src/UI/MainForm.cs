@@ -10,7 +10,7 @@ public sealed class MainForm : LocalizedForm
     private readonly TreeView tree = new() { Dock = DockStyle.Fill, HideSelection = false, BorderStyle = BorderStyle.None, ItemHeight = 29, FullRowSelect = true };
     private readonly ImageList treeImages = new() { ImageSize = new Size(20, 20), ColorDepth = ColorDepth.Depth32Bit };
     private readonly TextBox search = new() { Dock = DockStyle.Top, PlaceholderText = "Zoeken op naam, host of IP…", Margin = new Padding(10) };
-    private readonly TabControl tabs = new() { Dock = DockStyle.Fill, Padding = new Point(18, 8) };
+    private readonly PremiumTabControl tabs = new() { Dock = DockStyle.Fill, Padding = new Point(18, 8) };
     private readonly FlowLayoutPanel tools = new() { Dock = DockStyle.Top, Height = 110, Padding = new Padding(8, 4, 8, 4), WrapContents = false, AutoScroll = true, BackColor = Color.FromArgb(247, 249, 252) };
     private readonly MenuStrip navigation = new() { Dock = DockStyle.Top, Padding = new Padding(10, 4, 10, 4), ImageScalingSize = new Size(24, 24) };
     private readonly ToolStripLabel brand = new() { Alignment = ToolStripItemAlignment.Right, AutoSize = false, Width = 290, TextAlign = ContentAlignment.MiddleRight, Font = new Font("Segoe UI Semibold", 10) };
@@ -96,7 +96,7 @@ public sealed class MainForm : LocalizedForm
         Command(help, "Probleem melden…", () => Act(() => SupportLinks.ReportIssue(this)));
         Command(help, "Project op GitHub", () => Act(() => WebPages.Open(SupportLinks.Repository)));
         Command(help, "Helpcentrum…", () => { using var dialog = new HelpCenter(); dialog.ShowDialog(this); return Task.CompletedTask; }, Keys.F1);
-        Command(help, "Over deze app", () => Act(() => UiMessage.Show(this, "Heimora 0.7.1 Preview\n\nRDP- en SSH-verbindingen, lokaal of met PostgreSQL.\nWachtwoorden blijven lokaal versleuteld.\nGebruikersbeheer en centrale auditregistratie volgen later.", "Over " + appearance.DisplayName)));
+        Command(help, "Over deze app", () => Act(() => UiMessage.Show(this, "Heimora 0.7.2 Preview\n\nRDP- en SSH-verbindingen, lokaal of met PostgreSQL.\nWachtwoorden blijven lokaal versleuteld.\nGebruikersbeheer en centrale auditregistratie volgen later.", "Over " + appearance.DisplayName)));
         Command(help, "Sneltoetsen", () => Act(() => UiMessage.Show(this, "Ctrl+N   Nieuwe verbinding\nCtrl+Shift+N   Nieuwe map\nF2   Bewerken\nF5   Vernieuwen\nCtrl+W   Tab sluiten\nCtrl+,   Instellingen\n\nIn een remote sessie kunnen toetsen naar het remote systeem gaan.", "Sneltoetsen")));
         navigation.Items.Add(brand); MainMenuStrip = navigation;
         FlowLayoutPanel Group(string text, int width)
@@ -121,7 +121,7 @@ public sealed class MainForm : LocalizedForm
     }
     private void ApplyBranding()
     {
-        Text = appearance.DisplayName + " · 0.7.1 Preview";
+        Text = appearance.DisplayName + " · 0.7.2 Preview";
         var primary = ColorTranslator.FromHtml(appearance.PrimaryColor); var accent = ColorTranslator.FromHtml(appearance.AccentColor);
         navigation.BackColor = primary; navigation.ForeColor = BrandingSettings.Contrast(primary); navigation.Renderer = new NavigationRenderer { Primary = primary };
         foreach (var menu in navigation.Items.OfType<ToolStripMenuItem>()) menu.DropDown.Renderer = new NavigationRenderer { Primary = primary };
@@ -296,12 +296,13 @@ public sealed class MainForm : LocalizedForm
     private void ConfigureTabs()
     {
         tabs.DrawMode = TabDrawMode.OwnerDrawFixed; tabs.SizeMode = TabSizeMode.Fixed; tabs.ItemSize = new Size(210, 44); tabs.Padding = new Point(20, 9);
-        tabs.MouseMove += (_, _) => tabs.Invalidate(); tabs.MouseLeave += (_, _) => tabs.Invalidate();
         tabs.DrawItem += (_, e) =>
         {
             var page = tabs.TabPages[e.Index]; bool selected = tabs.SelectedIndex == e.Index;
             var rect = e.Bounds; e.Graphics.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.AntiAlias;
-            using var background = new SolidBrush(selected ? Color.White : Color.FromArgb(239, 243, 249)); e.Graphics.FillRectangle(background, rect);
+            bool hovered = tabs.HoveredIndex == e.Index;
+            using var shape = PremiumUi.Rounded(Rectangle.Inflate(rect, -3, -2), 8);
+            using var background = new SolidBrush(hovered ? Color.FromArgb(229, 238, 249) : selected ? Color.White : PremiumUi.Canvas); e.Graphics.FillPath(background, shape);
             using var icon = UiIcons.Create(page.Tag is Entry entry ? entry.Kind == "RDP" ? "Verbinden" : entry.Kind : "Lokaal", selected ? ColorTranslator.FromHtml(appearance.AccentColor) : Color.FromArgb(105, 125, 149));
             e.Graphics.DrawImage(icon, new Rectangle(rect.X + 11, rect.Y + 12, 20, 20));
             var textRect = new Rectangle(rect.X + 39, rect.Y + 3, rect.Width - (page.Tag is Entry ? 70 : 48), rect.Height - 6);

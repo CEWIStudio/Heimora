@@ -1,7 +1,7 @@
 [Setup]
 AppId={{7855ECF0-2407-46A9-A1C0-8BA8DD55B010}
 AppName=Heimora
-AppVersion=0.7.1
+AppVersion=0.7.2
 AppPublisher=Heimora
 DefaultDirName={autopf}\Heimora
 UsePreviousAppDir=no
@@ -12,7 +12,7 @@ ArchitecturesAllowed=x64compatible
 ArchitecturesInstallIn64BitMode=x64compatible
 MinVersion=10.0.17763
 OutputDir=release
-OutputBaseFilename=Heimora-Setup-0.7.1-win-x64
+OutputBaseFilename=Heimora-Setup-0.7.2-win-x64
 Compression=lzma2
 SolidCompression=yes
 WizardStyle=modern

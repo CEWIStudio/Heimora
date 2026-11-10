@@ -12,13 +12,13 @@ Manage RDP, SSH, web pages and reusable credentials in one workspace, with a loc
 - **Licence:** the repository's existing GPL-3.0 licence remains applicable; third-party component notices are in `vendor`.
 
 ---
-# Heimora 0.7.1 - Windows-preview
+# Heimora 0.7.2 - Windows-preview
 
 Heimora beheert RDP, SSH, webpagina's, mappen en herbruikbare credentials. De Windows x64-installer bevat de benodigde runtime, SQLite-engine, PostgreSQL-clientbibliotheek en SSH-terminal.
 
 ## Installeren
 
-Start Heimora-Setup-0.7.1-win-x64.exe. De installer vraagt beheerdersrechten en gebruikt C:\Program Files\Heimora. De dagelijkse app gebruikt je Windows-account. De installer is nog niet digitaal ondertekend.
+Start Heimora-Setup-0.7.2-win-x64.exe. De installer vraagt beheerdersrechten en gebruikt C:\Program Files\Heimora. De dagelijkse app gebruikt je Windows-account. De installer is nog niet digitaal ondertekend.
 
 ## Gegevens en herstel
 

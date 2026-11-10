@@ -8,8 +8,12 @@ Manage RDP, SSH, web pages and reusable credentials in one workspace, with a loc
 
 - **Languages:** choose Nederlands or English under Administration / Beheer → Settings / Instellingen and branding. Translation coverage is still being verified.
 - **Report a problem:** Help → Report an issue / Probleem melden opens a GitHub form in your browser. Only the version is prefilled; review your report before submitting it. A GitHub account is required.
-- **Downloads:** use only installers published by the repository owner. No GitHub release has been verified for this update.
+- **Downloads:** preview installers and checksums are available on [GitHub Releases](https://github.com/CEWIStudio/Heimora/releases). Current installers are unsigned.
 - **Licence:** the repository's existing GPL-3.0 licence remains applicable; third-party component notices are in `vendor`.
+
+## Code signing policy
+
+We are preparing an application for free open-source signing through SignPath Foundation; approval has not been granted. Read the [Code signing policy](CODE_SIGNING.md) for proposed team roles, signing scope and privacy information, and [SignPath preparation](docs/SIGNPATH.md) for remaining eligibility and setup checks.
 
 ---
 # Heimora 0.7.2 - Windows-preview

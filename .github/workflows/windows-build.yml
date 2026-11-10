@@ -1,0 +1,60 @@
+name: Windows build
+
+on:
+  push:
+    branches: [main]
+    tags: ['v*']
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: windows-2022
+    timeout-minutes: 30
+    defaults:
+      run:
+        shell: pwsh
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-dotnet@67a3573c9a986a3f9c594539f4ab511d57bb3ce9 # v4
+        with:
+          dotnet-version: '10.0.x'
+      - name: Check release version
+        run: |
+          $version = ([xml](Get-Content Heimora.csproj -Raw)).Project.PropertyGroup.Version
+          $installer = Get-Content installer.iss -Raw
+          if (!$installer.Contains("AppVersion=$version`n") -and !$installer.Contains("AppVersion=$version`r`n")) { throw 'Installer version does not match the application' }
+          if ($env:GITHUB_REF_TYPE -eq 'tag' -and $env:GITHUB_REF_NAME -ne "v$version") { throw 'Tag does not match the application version' }
+      - name: Publish, self-test and build unsigned installer
+        run: |
+          $inno = Join-Path ${env:ProgramFiles(x86)} 'Inno Setup 6\ISCC.exe'
+          if (!(Test-Path $inno)) { throw 'Inno Setup 6 is missing from the runner' }
+          ./build.ps1 -Inno $inno
+      - name: Create installer checksums
+        run: |
+          $installers = @(Get-ChildItem release/Heimora-Setup-*-win-x64.exe)
+          if ($installers.Count -ne 1) { throw 'Expected exactly one installer' }
+          $hash = (Get-FileHash $installers[0].FullName -Algorithm SHA256).Hash.ToLowerInvariant()
+          "$hash  $($installers[0].Name)" | Set-Content release/SHA256SUMS.txt -Encoding utf8NoBOM
+      - name: Upload unsigned build for inspection
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: heimora-unsigned-${{ github.sha }}
+          path: |
+            dist-heimora/
+            release/
+          if-no-files-found: error
+          retention-days: 14
+      - name: Upload self-test results
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: self-test-${{ github.sha }}
+          path: self-test-result.txt*
+          if-no-files-found: ignore
+          retention-days: 14

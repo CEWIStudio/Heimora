@@ -12,6 +12,17 @@ internal static class SupportTests
             UiText.SetLanguage("en");
             var report = UiText.T("Probleem melden."); var settingsLabel = UiText.T("Instellingen");
             check(report == "Report an issue." && settingsLabel == "Settings", $"English menus and report action are translated ({report}; {settingsLabel}; {UiText.Language}; {UiText.T("Probleem melden")})");
+            var punctuation = new string('.', 50000) + "\u2026";
+            check(UiText.T("Instellingen" + punctuation) == "Settings" + punctuation && UiText.T(punctuation) == punctuation, "Long punctuation suffixes translate without recursive stack growth");
+            using (var form = new Form())
+            {
+                var custom = new Label { Text = "Instellingen", Tag = "UserContent" };
+                var caption = new Label { Text = "Instellingen" };
+                var field = new TextBox { Text = "Instellingen" };
+                form.Controls.AddRange([custom, caption, field]); UiText.Apply(form);
+                check(custom.Text == "Instellingen" && field.Text == "Instellingen" && caption.Text == "Settings", "Translation preserves user content and input values");
+            }
+            check(File.Exists(Path.Combine(AppContext.BaseDirectory, "LICENSE")) && File.Exists(Path.Combine(AppContext.BaseDirectory, "SECURITY.md")), "Published application contains licence and private reporting guidance");
             var settings = new BrandingSettings { Language = "en" };
             var path = Path.Combine(root, "language-settings"); settings.Save(path);
             check(BrandingSettings.Load(path).Language == "en", "Interface language persists across settings reload");

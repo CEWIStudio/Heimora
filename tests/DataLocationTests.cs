@@ -33,5 +33,31 @@ internal static class DataLocationTests
         var updated = BrandingSettings.Load(clean);
         check(updated.DisplayName == "Heimora" && updated.PrimaryColor == "#101B2D" && updated.AccentColor == "#397CF6", "Previous defaults upgrade to the Heimora midnight and blue palette");
         check(PremiumUi.Aurora == Color.FromArgb(25, 201, 176), "Heimora uses the approved aurora green brand accent");
+        var longParent = Path.Combine(root, "long-recovery", new string('x', Math.Max(80, 200 - root.Length)));
+        var longLegacy = Path.Combine(longParent, "previous-profile");
+        var longDestination = Path.Combine(longParent, "Heimora");
+        Directory.CreateDirectory(longLegacy);
+        new Secrets(longLegacy).Set("long-path", "long-path-secret");
+        var longVault = new Vault { Entries = [new Entry { Name = "Long path", Host = "long.example.test" }] };
+        await new LocalStore(longLegacy).Save(longVault);
+        var auditId = new Secrets(longLegacy).Audit.Id;
+        DataLocation.Prepare(longLegacy, longDestination);
+        var longRecovery = Directory.GetDirectories(Path.Combine(longDestination, "compatibility-backups")).Single();
+        var recoveredSecrets = new Secrets(longRecovery);
+        check(Path.Combine(longRecovery, "heimora.db").Length > 260 && !Directory.Exists(longLegacy)
+            && recoveredSecrets.Get("long-path") == "long-path-secret" && recoveredSecrets.Audit.Id == auditId
+            && (await new LocalStore(longRecovery).Load()).Id == longVault.Id
+            && new Secrets(longDestination).Get("long-path") == "long-path-secret",
+            "Long recovery paths preserve readable credentials, metadata and audit binding");
+        recoveredSecrets.Set("long-path", "updated-long-path-secret");
+        var longBackup = new LocalDatabase(longRecovery).CreateMigrationBackup();
+        var restored = Path.Combine(longParent, "restored"); Directory.CreateDirectory(restored);
+        File.Copy(longBackup, Path.Combine(restored, "heimora.db"));
+        check(new Secrets(longRecovery).Get("long-path") == "updated-long-path-secret"
+            && File.Exists(Path.Combine(longRecovery, "heimora.db.bak"))
+            && new LocalDatabase(restored).Read("secrets") is string restoredSecrets
+            && restoredSecrets == new LocalDatabase(longRecovery).Read("secrets"),
+            "Long recovery paths support credential updates and readable migration backups");
+        MigrationGuaranteeTests.Run(root, check);
     }
 }

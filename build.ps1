@@ -12,7 +12,7 @@ try {
     & $Dotnet @publishArgs
     if ($LASTEXITCODE -ne 0) { throw 'Build failed' }
     $result = Join-Path $PSScriptRoot 'self-test-result.txt'
-    $check = Start-Process -FilePath (Join-Path $PSScriptRoot 'dist-heimora\Heimora.exe') -ArgumentList @('--self-test', $result) -Wait -PassThru -WindowStyle Hidden
+    $check = Start-Process -FilePath (Join-Path $PSScriptRoot 'dist-heimora\Heimora.exe') -ArgumentList @('--self-test', ('"' + $result + '"')) -Wait -PassThru -WindowStyle Hidden
     if ($check.ExitCode -ne 0) { Get-Content $result; throw 'Self-test failed' }
     Get-Content $result
     & $Inno installer.iss

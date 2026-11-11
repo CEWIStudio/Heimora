@@ -21,9 +21,9 @@ internal static class UiText
         if (string.IsNullOrEmpty(text)) return text;
         if (Language == "en" && English.TryGetValue(text, out var en)) return en;
         if (Language == "nl" && Dutch.TryGetValue(text, out var nl)) return nl;
-        if (text.EndsWith('…')) return T(text[..^1]) + "…";
-        if (text.EndsWith("...", StringComparison.Ordinal)) return T(text[..^3]) + "...";
-        if (text.EndsWith('.')) return T(text[..^1]) + ".";
+        int end = text.Length;
+        while (end > 0 && text[end - 1] is '.' or '\u2026') end--;
+        if (end < text.Length) return end == 0 ? text : T(text[..end]) + text[end..];
         foreach (var pair in English.Where(x => x.Key.Contains("{0}")))
         {
             string input = Language == "en" ? pair.Key : pair.Value, output = Language == "en" ? pair.Value : pair.Key;

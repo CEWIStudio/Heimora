@@ -30,7 +30,8 @@ internal sealed class LocalDatabase
     private SqliteConnection Open()
     {
         Directory.CreateDirectory(root); bool existed = File.Exists(FilePath);
-        var connection = new SqliteConnection(new SqliteConnectionStringBuilder { DataSource = FilePath, Pooling = false, Mode = SqliteOpenMode.ReadWriteCreate }.ConnectionString);
+        // Recovery folders and generated backup names can exceed the default Windows VFS path limit.
+        var connection = new SqliteConnection(new SqliteConnectionStringBuilder { DataSource = SqlitePath(FilePath), Pooling = false, Mode = SqliteOpenMode.ReadWriteCreate, Vfs = "win32-longpath" }.ConnectionString);
         try
         {
             connection.Open();
@@ -41,6 +42,12 @@ internal sealed class LocalDatabase
             setup.ExecuteNonQuery(); PrivateFiles.File(FilePath); return connection;
         }
         catch { connection.Dispose(); throw; }
+    }
+    private static string SqlitePath(string path)
+    {
+        string fullPath = Path.GetFullPath(path);
+        if (fullPath.StartsWith(@"\\?\", StringComparison.Ordinal)) return fullPath;
+        return fullPath.StartsWith(@"\\", StringComparison.Ordinal) ? @"\\?\UNC\" + fullPath[2..] : @"\\?\" + fullPath;
     }
     private static byte[] Context(string key) => SHA256.HashData(Encoding.UTF8.GetBytes("Heimora SQLite protected record v2:" + key));
     public string? Read(string key)
@@ -68,7 +75,7 @@ internal sealed class LocalDatabase
     }
     private static void Backup(SqliteConnection source, string destination)
     {
-        using var target = new SqliteConnection(new SqliteConnectionStringBuilder { DataSource = destination, Pooling = false }.ConnectionString); target.Open(); source.BackupDatabase(target); PrivateFiles.File(destination);
+        using var target = new SqliteConnection(new SqliteConnectionStringBuilder { DataSource = SqlitePath(destination), Pooling = false, Vfs = "win32-longpath" }.ConnectionString); target.Open(); source.BackupDatabase(target); PrivateFiles.File(destination);
     }
     public string CreateMigrationBackup()
     {
@@ -88,7 +95,14 @@ internal sealed class LocalDatabase
                 var encrypted = ProtectedData.Protect(bytes, Encoding.UTF8.GetBytes("Heimora compatibility backup v2"), DataProtectionScope.CurrentUser);
                 var path = Path.Combine(directory, Path.GetFileName(source) + "." + Guid.NewGuid().ToString("N") + ".dpapi");
                 using (var stream = new FileStream(path, FileMode.CreateNew, FileAccess.Write, FileShare.None, 4096, FileOptions.WriteThrough)) { stream.Write(encrypted); stream.Flush(true); }
-                PrivateFiles.File(path); File.Delete(source);
+                PrivateFiles.File(path);
+                byte[] restored = ProtectedData.Unprotect(File.ReadAllBytes(path), Encoding.UTF8.GetBytes("Heimora compatibility backup v2"), DataProtectionScope.CurrentUser);
+                try
+                {
+                    if (!bytes.AsSpan().SequenceEqual(restored)) throw new InvalidDataException("De herstelkopie wijkt af van de bron. Het oorspronkelijke bestand is behouden.");
+                }
+                finally { CryptographicOperations.ZeroMemory(restored); }
+                File.Delete(source);
             }
             finally { CryptographicOperations.ZeroMemory(bytes); }
         }

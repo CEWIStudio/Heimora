@@ -42,7 +42,7 @@ Migratie naar een lege PostgreSQL-kluis bewaart de lokale bron, maakt een SQLite
 
 De huidige lokale database heet heimora.db, de serverkluis public.heimora_vault. Nieuwe secretrecords gebruiken formaat 3 met Heimora-contextbinding. Bestaande records en auditcontrolepunten blijven leesbaar via onveranderlijke binaire formaat-ID's; secrets worden gecontroleerd opnieuw versleuteld met behoud van auditidentiteit. Deze formaat-ID's zijn geen sleutels of toegangsbewijzen.
 
-Vorige gegevensprofielen worden onder neutrale herstelmappen bewaard. Een bestaande actieve kluis wordt niet samengevoegd of overschreven. De installer ruimt herkenbare eerdere standaardinstallaties uitsluitend op bij overeenkomende executable-hashes en een gecontroleerde programmamap zonder reparse-punten. Handmatig bewaarde downloads en externe archieven vallen buiten deze opruiming. Automatische installeropruiming is nog niet uitgevoerd op een schone verhoogde Windows-testinstallatie.
+Vorige gegevensprofielen worden onder neutrale herstelmappen bewaard. Een bestaande actieve kluis wordt niet samengevoegd of overschreven. De installer verwijdert eerdere programmamappen en snelkoppelingen niet automatisch. Een herkenbare executable bewijst niet dat alle overige bestanden bij de applicatie horen. Controleer oude installaties handmatig en bewaar eigen bestanden voordat je ze verwijdert.
 
 De PostgreSQL-omzetting gebruikt een transactie en advisory lock. Tabel en bijbehorende automatisch benoemde constraints worden hernoemd; twee gelijktijdig aanwezige kluistabellen blokkeren automatische omzetting. Eigenaarsrechten zijn vereist. Deze route is gecompileerd maar niet tegen een live PostgreSQL-server getest. Maak vóór de update een volledige databaseback-up.
 

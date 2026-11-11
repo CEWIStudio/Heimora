@@ -19,7 +19,7 @@ internal sealed class SplashForm : LocalizedForm
         var heading = new Label { Text = branding.DisplayName, Font = new Font("Segoe UI Semibold", 23), Location = new Point(154, 58), Size = new Size(420, 90), AutoEllipsis = true, BackColor = Color.Transparent };
         var subtitle = new Label { Text = "Al je verbindingen. Eén werkplek.", Location = new Point(47, 183), Size = new Size(520, 26), Font = new Font("Segoe UI", 12), BackColor = Color.Transparent };
         phase.SetBounds(47, 255, 526, 24); phase.Text = "Werkplek voorbereiden…";
-        var version = new Label { Text = "VERSION 0.7.2   /   WINDOWS", Font = new Font("Segoe UI", 8), Location = new Point(47, 314), Size = new Size(526, 20), BackColor = Color.Transparent };
+        var version = new Label { Text = "VERSION " + AppVersion.Current + "   /   WINDOWS", Font = new Font("Segoe UI", 8), Location = new Point(47, 314), Size = new Size(526, 20), BackColor = Color.Transparent };
         Controls.AddRange([heading, subtitle, phase, version]);
         animation.Tick += (_, _) => { position = (position + 8) % 720; Invalidate(new Rectangle(47, 292, 526, 6)); };
         Shown += (_, _) => animation.Start();

@@ -1,4 +1,9 @@
 {
+  "Inloggegevens": "Credentials",
+  "INLOGGEGEVENS": "CREDENTIALS",
+  "Nieuwe inloggegevens": "New credentials",
+  "Zoek inloggegevens...": "Search credentials...",
+  "Zoek verbinding...": "Search connections...",
   "Bestand": "File", "Start": "Home", "Verbindingen": "Connections", "Beeld": "View", "Beheer": "Administration", "Help": "Help",
   "Lokale kluis openen": "Open local vault", "PostgreSQL openen": "Open PostgreSQL", "Instellingen": "Settings", "Afsluiten": "Exit",
   "Nieuwe verbinding": "New connection", "Nieuwe map": "New folder", "Nieuwe credential": "New credential", "Nieuwe webpagina": "New web page",

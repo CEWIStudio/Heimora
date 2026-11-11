@@ -52,7 +52,10 @@ public sealed class EntryDialog : EditDialog
         bool Descendant(Entry e)
         { var p = e.ParentId; while (p.HasValue) { if (p == entry.Id) return true; p = vault.Entries.First(x => x.Id == p).ParentId; } return false; }
         string FullPath(Entry e) => e.ParentId is Guid p ? FullPath(vault.Entries.First(x => x.Id == p)) + " / " + e.Name : e.Name;
-        folders.AddRange(vault.Entries.Where(e => e.Kind == "Folder" && e.Id != entry.Id && !Descendant(e)).OrderBy(FullPath).Select(e => new FolderChoice(e.Id, FullPath(e))));
+        bool accountArea = entry.Kind == "Credential" || entry.CredentialFolder;
+        var accountPaths = VaultNavigation.Visible(vault, true, "");
+        folders.AddRange(vault.Entries.Where(e => e.Kind == "Folder" && e.Id != entry.Id && !Descendant(e) &&
+            (accountArea ? e.CredentialFolder || accountPaths.Contains(e.Id) : !e.CredentialFolder)).OrderBy(FullPath).Select(e => new FolderChoice(e.Id, FullPath(e))));
         var parent = Row("Map", new ComboBox { DropDownStyle = ComboBoxStyle.DropDownList });
         parent.Items.AddRange(folders.Cast<object>().ToArray());
         parent.SelectedIndex = Math.Max(0, folders.FindIndex(x => x.Id == entry.ParentId));

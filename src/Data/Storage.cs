@@ -18,6 +18,7 @@ public sealed class Entry
     public string Color { get; set; } = "#D4A74A";
     public bool Clipboard { get; set; } = true;
     public Guid? CredentialId { get; set; }
+    public bool CredentialFolder { get; set; }
     public Entry Copy() => (Entry)MemberwiseClone();
     public override string ToString() => Name;
 }
@@ -47,6 +48,7 @@ public sealed class Vault
             if (e.CredentialId.HasValue && (e.Kind is not ("RDP" or "SSH") || !byId.TryGetValue(e.CredentialId.Value, out var credential) || credential.Kind != "Credential"))
                 throw new InvalidDataException("De gekoppelde credential bestaat niet of is ongeldig.");
             if (e.Kind == "Credential" && (e.Username.Length != 0 || e.Domain.Length != 0)) throw new InvalidDataException("Credential-inloggegevens horen uitsluitend in de versleutelde lokale opslag.");
+            if (e.CredentialFolder && e.Kind != "Folder") throw new InvalidDataException("Alleen mappen kunnen een inloggegevensmap zijn.");
             var seen = new HashSet<Guid> { e.Id };
             var parent = e.ParentId;
             while (parent.HasValue)
@@ -54,6 +56,8 @@ public sealed class Vault
                 if (!seen.Add(parent.Value) || !byId.TryGetValue(parent.Value, out var folder) || folder.Kind != "Folder")
                     throw new InvalidDataException("Ongeldige of circulaire mappenstructuur.");
                 parent = folder.ParentId;
+                if (folder.CredentialFolder && e.Kind != "Credential" && !e.CredentialFolder)
+                    throw new InvalidDataException("In een inloggegevensmap mogen alleen accounts en inloggegevensmappen staan.");
                 if (seen.Count > 64) throw new InvalidDataException("Maximaal 64 mapniveaus worden ondersteund.");
             }
         }

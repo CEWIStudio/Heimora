@@ -28,7 +28,7 @@ jobs:
         run: |
           $version = ([xml](Get-Content Heimora.csproj -Raw)).Project.PropertyGroup.Version
           $installer = Get-Content installer.iss -Raw
-          if (!$installer.Contains("AppVersion=$version`n") -and !$installer.Contains("AppVersion=$version`r`n")) { throw 'Installer version does not match the application' }
+          if (!$installer.Contains('AppVersion={#AppVersion}')) { throw 'Installer version does not match the application' }
           if ($env:GITHUB_REF_TYPE -eq 'tag' -and $env:GITHUB_REF_NAME -ne "v$version") { throw 'Tag does not match the application version' }
       - name: Publish, self-test and build unsigned installer
         run: |

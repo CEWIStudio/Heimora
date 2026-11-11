@@ -7,7 +7,9 @@ public sealed class MainForm : LocalizedForm
     private readonly Secrets secrets;
     private IVaultStore store;
     private Vault vault = new();
-    private readonly TreeView tree = new() { Dock = DockStyle.Fill, HideSelection = false, BorderStyle = BorderStyle.None, ItemHeight = 29, FullRowSelect = true };
+    private readonly TreeView tree = new() { Dock = DockStyle.Fill, HideSelection = false, BorderStyle = BorderStyle.None, ItemHeight = 34, FullRowSelect = true, ShowLines = false, ShowRootLines = true, ForeColor = Color.FromArgb(35, 50, 69) };
+    private readonly ComboBox navigationArea = new() { Name = "NavigationArea", Dock = DockStyle.Top, DropDownStyle = ComboBoxStyle.DropDownList, AccessibleName = "Navigatieonderdeel" };
+    private bool CredentialArea => navigationArea.SelectedIndex == 1;
     private readonly ImageList treeImages = new() { ImageSize = new Size(20, 20), ColorDepth = ColorDepth.Depth32Bit };
     private readonly TextBox search = new() { Dock = DockStyle.Top, PlaceholderText = "Zoeken op naam, host of IP…", Margin = new Padding(10) };
     private readonly PremiumTabControl tabs = new() { Dock = DockStyle.Fill, Padding = new Point(18, 8) };
@@ -25,14 +27,25 @@ public sealed class MainForm : LocalizedForm
     {
         this.secrets = secrets; single = mutex; store = new LocalStore(Files.Root);
         tree.ImageList = treeImages; Disposed += (_, _) => treeImages.Dispose();
-        Text = "Heimora · 0.1 Preview"; Font = new Font("Segoe UI", 10); MinimumSize = new Size(1000, 650); Size = new Size(1350, 850); StartPosition = FormStartPosition.CenterScreen;
+        Text = "Heimora · " + AppVersion.Display; Font = new Font("Segoe UI", 10); MinimumSize = new Size(1000, 650); Size = new Size(1350, 850); StartPosition = FormStartPosition.CenterScreen;
         BackColor = Color.FromArgb(242, 245, 249); Icon = Icon.ExtractAssociatedIcon(Application.ExecutablePath);
         var bar = new StatusStrip(); bar.Items.Add(status);
         var split = new SplitContainer { Size = new Size(1300, 650), Dock = DockStyle.Fill, SplitterDistance = 310, BackColor = Color.FromArgb(221, 227, 235), SplitterWidth = 5 };
         var left = new Panel { Dock = DockStyle.Fill, Padding = new Padding(14), BackColor = Color.White };
-        var treeTitle = new Label { Dock = DockStyle.Top, Text = "VERBINDINGEN", Height = 34, ForeColor = Color.FromArgb(87, 103, 124), Font = new Font("Segoe UI Semibold", 9) };
+        var treeTitle = new Label { Dock = DockStyle.Fill, Text = "VERBINDINGEN", ForeColor = Color.FromArgb(87, 103, 124), Font = new Font("Segoe UI Semibold", 9), TextAlign = ContentAlignment.MiddleLeft };
+        var add = new PremiumButton { Text = "+", Dock = DockStyle.Right, Width = 40, AccessibleName = "Item toevoegen" };
+        var addMenu = new ContextMenuStrip();
+        addMenu.Items.Add("Nieuw item", null, async (_, _) => await Guard(() => Edit(true, false, CredentialArea)));
+        addMenu.Items.Add("Nieuwe map", null, async (_, _) => await Guard(() => Edit(true, true)));
+        addMenu.Opening += (_, _) => addMenu.Items[0].Text = UiText.T(CredentialArea ? "Nieuwe inloggegevens" : "Nieuwe verbinding");
+        add.Click += (_, _) => addMenu.Show(add, new Point(0, add.Height));
+        Disposed += (_, _) => addMenu.Dispose();
+        var heading = new Panel { Dock = DockStyle.Top, Height = 40 }; heading.Controls.Add(treeTitle); heading.Controls.Add(add);
         var searchPanel = new Panel { Dock = DockStyle.Top, Height = 47 }; searchPanel.Controls.Add(new FieldFrame(search) { Dock = DockStyle.Top });
-        left.Controls.Add(tree); left.Controls.Add(searchPanel); left.Controls.Add(treeTitle);
+        navigationArea.Items.AddRange(["Verbindingen", "Inloggegevens"]); navigationArea.SelectedIndex = 0;
+        var areaPanel = new Panel { Dock = DockStyle.Top, Height = 44 }; areaPanel.Controls.Add(new FieldFrame(navigationArea) { Dock = DockStyle.Top });
+        left.Controls.Add(tree); left.Controls.Add(searchPanel); left.Controls.Add(areaPanel); left.Controls.Add(heading);
+        navigationArea.SelectedIndexChanged += (_, _) => { search.Clear(); treeTitle.Text = CredentialArea ? "INLOGGEGEVENS" : "VERBINDINGEN"; search.PlaceholderText = CredentialArea ? "Zoek inloggegevens..." : "Zoek verbinding..."; RefreshTree(); };
         split.Panel1.Controls.Add(left); split.Panel2.Controls.Add(tabs);
         Controls.Add(split); Controls.Add(tools); Controls.Add(navigation); Controls.Add(bar);
         BuildNavigation(split, bar);
@@ -96,7 +109,7 @@ public sealed class MainForm : LocalizedForm
         Command(help, "Probleem melden…", () => Act(() => SupportLinks.ReportIssue(this)));
         Command(help, "Project op GitHub", () => Act(() => WebPages.Open(SupportLinks.Repository)));
         Command(help, "Helpcentrum…", () => { using var dialog = new HelpCenter(); dialog.ShowDialog(this); return Task.CompletedTask; }, Keys.F1);
-        Command(help, "Over deze app", () => Act(() => UiMessage.Show(this, "Heimora 0.7.2 Preview\n\nRDP- en SSH-verbindingen, lokaal of met PostgreSQL.\nWachtwoorden blijven lokaal versleuteld.\nGebruikersbeheer en centrale auditregistratie volgen later.", "Over " + appearance.DisplayName)));
+        Command(help, "Over deze app", () => Act(() => UiMessage.Show(this, "Heimora " + AppVersion.Display + "\n\nRDP- en SSH-verbindingen, lokaal of met PostgreSQL.\nWachtwoorden blijven lokaal versleuteld.\nGebruikersbeheer en centrale auditregistratie volgen later.", "Over " + appearance.DisplayName)));
         Command(help, "Sneltoetsen", () => Act(() => UiMessage.Show(this, "Ctrl+N   Nieuwe verbinding\nCtrl+Shift+N   Nieuwe map\nF2   Bewerken\nF5   Vernieuwen\nCtrl+W   Tab sluiten\nCtrl+,   Instellingen\n\nIn een remote sessie kunnen toetsen naar het remote systeem gaan.", "Sneltoetsen")));
         navigation.Items.Add(brand); MainMenuStrip = navigation;
         FlowLayoutPanel Group(string text, int width)
@@ -121,7 +134,7 @@ public sealed class MainForm : LocalizedForm
     }
     private void ApplyBranding()
     {
-        Text = appearance.DisplayName + " · 0.7.2 Preview";
+        Text = appearance.DisplayName + " · " + AppVersion.Display;
         var primary = ColorTranslator.FromHtml(appearance.PrimaryColor); var accent = ColorTranslator.FromHtml(appearance.AccentColor);
         navigation.BackColor = primary; navigation.ForeColor = BrandingSettings.Contrast(primary); navigation.Renderer = new NavigationRenderer { Primary = primary };
         foreach (var menu in navigation.Items.OfType<ToolStripMenuItem>()) menu.DropDown.Renderer = new NavigationRenderer { Primary = primary };
@@ -154,10 +167,10 @@ public sealed class MainForm : LocalizedForm
     private async Task Guard(Func<Task> action)
     {
         if (busy) return;
-        busy = true; tools.Enabled = false; navigation.Enabled = false; tree.Enabled = false; UseWaitCursor = true;
+        busy = true; tools.Enabled = false; navigation.Enabled = false; navigationArea.Enabled = false; tree.Enabled = false; UseWaitCursor = true;
         try { await action(); }
         catch (Exception ex) { UiMessage.Show(this, Friendly(ex), "Heimora", MessageBoxButtons.OK, MessageBoxIcon.Error); }
-        finally { busy = false; tools.Enabled = true; navigation.Enabled = true; tree.Enabled = true; UseWaitCursor = false; UpdateStatus(); }
+        finally { busy = false; tools.Enabled = true; navigation.Enabled = true; navigationArea.Enabled = true; tree.Enabled = true; UseWaitCursor = false; UpdateStatus(); }
     }
     private static string Friendly(Exception ex) => ex is Npgsql.NpgsqlException ? "PostgreSQL kon de actie niet uitvoeren. Controleer bereikbaarheid, database, rechten en TLS-certificaat. Wijzigingen zijn niet lokaal als databasewijziging opgeslagen.\n\n" + (ex is Npgsql.PostgresException pg ? "PostgreSQL-code: " + pg.SqlState : "Controleer ook of servernaam en certificaatnaam overeenkomen.") : ex.Message;
     private void RequireLoaded() { if (!loaded) throw new InvalidOperationException("De kluis is niet geladen. Herstel het gegevensbestand of open een andere opslag."); }
@@ -181,9 +194,7 @@ public sealed class MainForm : LocalizedForm
         using (var web = UiIcons.Create("Web", ColorTranslator.FromHtml(appearance.AccentColor))) treeImages.Images.Add("Web", web);
         using (var key = UiIcons.Create("Credential", Color.FromArgb(176, 125, 32))) treeImages.Images.Add("Credential", key);
         var q = search.Text.Trim();
-        var visible = new HashSet<Guid>();
-        foreach (var e in vault.Entries.Where(e => q.Length == 0 || e.Name.Contains(q, StringComparison.OrdinalIgnoreCase) || e.Host.Contains(q, StringComparison.OrdinalIgnoreCase)))
-        { visible.Add(e.Id); var parent = e.ParentId; while (parent.HasValue) { visible.Add(parent.Value); parent = vault.Entries.First(x => x.Id == parent).ParentId; } }
+        var visible = VaultNavigation.Visible(vault, CredentialArea, q);
         void Add(TreeNodeCollection nodes, Guid? parent)
         {
             foreach (var e in vault.Entries.Where(e => e.ParentId == parent && visible.Contains(e.Id)).OrderBy(e => e.Kind != "Folder").ThenBy(e => e.Name, StringComparer.CurrentCultureIgnoreCase))
@@ -195,7 +206,7 @@ public sealed class MainForm : LocalizedForm
                     if (!treeImages.Images.ContainsKey(imageKey)) { using var icon = UiIcons.Create("+ Map", ColorTranslator.FromHtml(e.Color)); treeImages.Images.Add(imageKey, icon); }
                 }
                 var n = new TreeNode(e.Name) { Tag = e, ImageKey = imageKey, SelectedImageKey = imageKey, ToolTipText = e.Kind == "Folder" ? e.Name : e.Kind == "Web" ? e.Host : $"{e.Kind} · {e.Host}:{e.Port}" };
-                if (e.Kind == "Folder") n.ForeColor = ColorTranslator.FromHtml(e.Color);
+                if (e.Kind == "Credential") n.ToolTipText = "Opgeslagen inloggegevens — dubbelklik om te bewerken";
                 nodes.Add(n); Add(n.Nodes, e.Id); if (expanded.Contains(e.Id) || q.Length > 0) n.Expand(); if (e.Id == selected) tree.SelectedNode = n;
             }
         }
@@ -204,7 +215,10 @@ public sealed class MainForm : LocalizedForm
     private async Task Edit(bool create, bool folder, bool credential = false, bool web = false)
     {
         RequireLoaded();
-        var entry = create ? new Entry { Name = folder ? "Nieuwe map" : credential ? "Nieuwe credential" : web ? "Nieuwe webpagina" : "Nieuwe verbinding", Kind = folder ? "Folder" : credential ? "Credential" : web ? "Web" : "RDP", ParentId = SelectedFolder } : Selected;
+        bool accountArea = credential || (folder && CredentialArea);
+        var parentId = accountArea == CredentialArea ? SelectedFolder : null;
+        if (!accountArea && parentId is Guid parent && vault.Entries.Any(e => e.Id == parent && e.CredentialFolder)) parentId = null;
+        var entry = create ? new Entry { Name = folder ? "Nieuwe map" : credential ? "Nieuwe inloggegevens" : web ? "Nieuwe webpagina" : "Nieuwe verbinding", Kind = folder ? "Folder" : credential ? "Credential" : web ? "Web" : "RDP", ParentId = parentId, CredentialFolder = folder && accountArea } : Selected;
         if (entry == null) return;
         string key = entry.Kind == "Credential" ? Credentials.Key(vault.Id, entry.Id) : SecretKey(entry);
         var oldSecret = entry.Kind is "Folder" or "Web" ? "" : secrets.Get(key);
@@ -224,7 +238,9 @@ public sealed class MainForm : LocalizedForm
         if (changedSecret) secrets.Set(key, newSecret);
         try { await store.Save(next); }
         catch { secrets.Audit.Record(action, key, AuditOutcome.Failed); if (changedSecret) secrets.Set(key, oldSecret, rollback: true); throw; }
-        vault = next; RefreshTree(); SelectEntry(dialog.Value.Id); secrets.Audit.Record(action, key, AuditOutcome.Succeeded);
+        vault = next;
+        navigationArea.SelectedIndex = dialog.Value.Kind == "Credential" || dialog.Value.CredentialFolder || (!create && dialog.Value.Kind == "Folder" && CredentialArea) ? 1 : 0;
+        search.Clear(); RefreshTree(); SelectEntry(dialog.Value.Id); secrets.Audit.Record(action, key, AuditOutcome.Succeeded);
     }
     private void SelectEntry(Guid id)
     {
@@ -237,6 +253,8 @@ public sealed class MainForm : LocalizedForm
         var ids = new HashSet<Guid> { e.Id };
         bool added; do { added = false; foreach (var child in vault.Entries.Where(x => x.ParentId.HasValue && ids.Contains(x.ParentId.Value))) added |= ids.Add(child.Id); } while (added);
         Credentials.EnsureCanDelete(vault, ids);
+        if (e.Kind == "Folder" && vault.Entries.Any(x => ids.Contains(x.Id) && (CredentialArea ? x.Kind is "RDP" or "SSH" or "Web" : x.Kind == "Credential")))
+            throw new InvalidOperationException("Deze bestaande map bevat items uit beide onderdelen. Verplaats die eerst via Bewerken naar aparte mappen voordat je de map verwijdert.");
         if (UiMessage.Show(this, $"‘{e.Name}’ verwijderen? Dit verwijdert {ids.Count} item(s), inclusief onderliggende items.", "Verwijderen", MessageBoxButtons.YesNo, MessageBoxIcon.Warning) != DialogResult.Yes) return;
         secrets.Audit.Record(AuditAction.MetadataDelete, SecretKey(e), AuditOutcome.Started);
         try

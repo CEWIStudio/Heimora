@@ -83,10 +83,16 @@ public static class SelfTest
                 using (var menuImage = new Bitmap(startMenu.DropDown.Width, startMenu.DropDown.Height)) { startMenu.DropDown.DrawToBitmap(menuImage, new Rectangle(Point.Empty, menuImage.Size)); menuImage.Save(Path.Combine(Path.GetDirectoryName(output)!, "qa-menu.png")); }
                 startMenu.HideDropDown();
                 Check(main.Text.StartsWith(appearance.DisplayName), "Saved app branding applied on startup");
+                Check(main.Text.EndsWith(AppVersion.Display), "Main window displays the project assembly version");
                 Check(Children(main).OfType<Button>().Any(x => x.Text == "Instellingen" && x.Image != null), "Settings shortcut and toolbar icons rendered");
                 Check(Children(main).OfType<Button>().All(x => x.Width >= TextRenderer.MeasureText(x.Text, x.Font).Width + 16), "Toolbar captions fit without wrapping");
                 Check(Children(main).OfType<Label>().Where(x => x.Name == "DashboardCount").Select(x => x.Text).Order().SequenceEqual(new[] { "0", "1", "1" }), "Dashboard counters reflect loaded vault contents");
                 Check(tree.Nodes.Count == 1 && tree.Nodes[0].Nodes.Count == 1, "Nested folder tree rendered");
+                var area = Children(main).OfType<ComboBox>().Single(x => x.Name == "NavigationArea");
+                area.SelectedIndex = 1; Application.DoEvents();
+                Check(tree.Nodes.Count == 0 && search.PlaceholderText.Contains("inloggegevens"), "Account navigation hides connection folders and updates search");
+                area.SelectedIndex = 0; Application.DoEvents();
+                Check(tree.Nodes.Count == 1 && tree.Nodes[0].Nodes.Count == 1 && !tree.ShowLines, "Returning to connections restores the clean tree");
                 Check(tree.ImageList != null && tree.Nodes[0].ImageKey.StartsWith("folder:") && tree.Nodes[0].Text == "Lab", "Folder tree uses colored icons with clean captions");
                 var sessionTabs = Children(main).OfType<PremiumTabControl>().Single();
                 var tabRect = sessionTabs.GetTabRect(0);

@@ -12,6 +12,18 @@ internal static class CredentialTests
         var rdp = new Entry { Name = "Windows", Host = "127.0.0.1", Username = "custom-user", Domain = "CUSTOM", CredentialId = credential.Id };
         var ssh = new Entry { Name = "Linux", Kind = "SSH", Host = "127.0.0.1", Port = 22, CredentialId = credential.Id };
         vault.Entries.AddRange([folder, credential, rdp, ssh]); vault.Validate();
+        var accountFolder = new Entry { Kind = "Folder", Name = "Accountmap", CredentialFolder = true };
+        vault.Entries.Add(accountFolder); vault.Validate();
+        var connections = VaultNavigation.Visible(vault, false, "");
+        var accounts = VaultNavigation.Visible(vault, true, "");
+        check(connections.Contains(rdp.Id) && !connections.Contains(credential.Id) && !connections.Contains(accountFolder.Id), "Connections view excludes credentials and account folders");
+        check(accounts.Contains(credential.Id) && accounts.Contains(folder.Id) && accounts.Contains(accountFolder.Id) && !accounts.Contains(rdp.Id), "Accounts view preserves legacy paths and separate empty folders");
+        check(VaultNavigation.Visible(vault, true, "administrator").SetEquals(new[] { folder.Id, credential.Id }), "Account search includes ancestors without exposing connections");
+        var wrongFolder = vault.Copy(); wrongFolder.Entries.Single(e => e.Id == rdp.Id).ParentId = accountFolder.Id;
+        bool wrongRejected = false; try { wrongFolder.Validate(); } catch (InvalidDataException) { wrongRejected = true; }
+        check(wrongRejected, "Connection cannot be saved inside account folder");
+        var folderRoundtrip = JsonSerializer.Deserialize<Vault>(JsonSerializer.Serialize(vault))!;
+        check(folderRoundtrip.Entries.Single(e => e.Id == accountFolder.Id).CredentialFolder, "Account folder scope survives storage round-trip");
         secrets.Set(vault.Id.ToString("N") + "/" + rdp.Id.ToString("N"), "own-password");
         bool rejected = false; try { Credentials.Resolve(vault, rdp, secrets); } catch (InvalidOperationException) { rejected = true; }
         check(rejected, "Missing linked credential refuses connection without falling back to custom password");

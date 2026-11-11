@@ -13,6 +13,7 @@ internal static class StartupTests
             {
                 splash.Show(); splash.SetPhase("Verbindingen en credentials laden…"); Application.DoEvents();
                 check(splash.Text == branding.DisplayName && splash.BackColor == ColorTranslator.FromHtml(branding.PrimaryColor), "Splash honors saved app name and branding colors");
+                check(splash.Controls.OfType<Label>().Any(x => x.Text == "VERSION " + AppVersion.Current + "   /   WINDOWS"), "Splash displays the project assembly version");
                 check(splash.Region != null && !splash.Region.IsVisible(0, 0) && splash.Region.IsVisible(splash.Width / 2, splash.Height / 2), "Splash clips its window to rounded corners while keeping its content visible");
                 using var image = new Bitmap(splash.Width, splash.Height); splash.DrawToBitmap(image, new Rectangle(Point.Empty, splash.Size)); image.Save(Path.Combine(root, "..", "qa-splash.png")); splash.Close();
             }

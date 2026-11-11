@@ -16,13 +16,13 @@ Manage RDP, SSH, web pages and reusable credentials in one workspace, with a loc
 We are preparing an application for free open-source signing through SignPath Foundation; approval has not been granted. Read the [Code signing policy](CODE_SIGNING.md) for proposed team roles, signing scope and privacy information, and [SignPath preparation](docs/SIGNPATH.md) for remaining eligibility and setup checks.
 
 ---
-# Heimora 0.7.2 - Windows-preview
+# Heimora 0.8.0 - Windows-preview
 
 Heimora beheert RDP, SSH, webpagina's, mappen en herbruikbare credentials. De Windows x64-installer bevat de benodigde runtime, SQLite-engine, PostgreSQL-clientbibliotheek en SSH-terminal.
 
 ## Installeren
 
-Start Heimora-Setup-0.7.2-win-x64.exe. De installer vraagt beheerdersrechten en gebruikt C:\Program Files\Heimora. De dagelijkse app gebruikt je Windows-account. De installer is nog niet digitaal ondertekend.
+Start Heimora-Setup-0.8.0-win-x64.exe. De installer vraagt beheerdersrechten en gebruikt C:\Program Files\Heimora. De dagelijkse app gebruikt je Windows-account. De installer is nog niet digitaal ondertekend.
 
 ## Gegevens en herstel
 
@@ -48,6 +48,8 @@ F1 opent de doorzoekbare offline help. Onder Over Heimora staat onze combinatie 
 
 ## Bouwen en controleren
 
+De actuele versie staat in `Heimora.csproj`. Zie [versieafspraken](docs/VERSIONING.md) voor ophogen, tags en releases en [CHANGELOG.md](CHANGELOG.md) voor wijzigingen.
+
 Gebruik .NET 10 SDK en Inno Setup 6 op de ontwikkel-pc. build.ps1 publiceert zelfstandig voor Windows x64, voert de zelftests uit en maakt de installer. Een optionele PackageSource kan naar een lokale NuGet-feed verwijzen. --data-dir geeft een geïsoleerde gegevensmap; --self-test voert lokale controles uit. HEIMORA_SSH_NETWORK_TEST=1 activeert de aanvullende SSH-protocoltest.
 
 Echte RDP-/SSH-authenticatie, live PostgreSQL, een volledige installatie/update/herstel op een schone pc en een onafhankelijke pentest zijn nog niet volledig gevalideerd. [SECURITY-REVIEW.md](docs/SECURITY-REVIEW.md) beschrijft de beveiligingsgrenzen. Er is geen garantie op afwezigheid van kwetsbaarheden.
@@ -57,3 +59,9 @@ Licenties van meegeleverde componenten staan in vendor. Persoonlijke gegevens bl
 ## Repository structure
 
 src/ contains the application code, grouped into UI, Data, Security and Connections. tests/ contains the built-in self-tests, which remain part of the application and run with --self-test. docs/ contains design, branding and security documentation. assets/, languages/ and vendor/ contain runtime resources and third-party notices. Heimora.csproj, build.ps1 and installer.iss remain in the repository root.
+# Verbindingen en inloggegevens
+
+Kies boven de navigatieboom **Verbindingen** of **Inloggegevens**. Via **+** voeg je een item of map toe aan het gekozen onderdeel. Inloggegevensmappen zijn uitsluitend voor accounts en andere inloggegevensmappen. Bij een RDP- of SSH-verbinding kun je een opgeslagen account selecteren; wijzigen van dat account geldt voor volgende verbindingen die ernaar verwijzen.
+
+Bestaande accounts verschijnen met hun oorspronkelijke mappad onder Inloggegevens. Hun ID en versleutelde inhoud blijven behouden. Bestaande gemengde mappen kunnen in beide onderdelen voorkomen. Verplaats hun items via Bewerken naar aparte mappen voordat je zo'n map verwijdert. Accountnamen en mappen zijn metadata; gebruikersnaam, domein en wachtwoord blijven in de bestaande lokale versleutelde opslag. Gebruik dezelfde applicatieversie op alle clients: oudere versies kennen het nieuwe mapkenmerk niet.
+

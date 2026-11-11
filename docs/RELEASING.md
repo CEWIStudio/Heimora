@@ -7,7 +7,7 @@ Deze werkwijze is op 11 november 2026 uitgevoerd voor Heimora 0.8.0. Raadpleeg d
 - Repository: https://github.com/CEWIStudio/Heimora; standaardbranch `main`.
 - De inhoud van `Codebase/` staat op de root van de GitHub-repository, dus zonder extra map `Codebase`.
 - Versiebron: `<Version>` in `Heimora.csproj`. Zie [VERSIONING.md](VERSIONING.md).
-- Commit uitsluitend bedoelde broncode, tests, resources en projectdocumentatie. Geen Secrets, lokale kluizen, logs, NuGet-caches, bin/obj, dist-*, release/ of source-*-testkopie�n.
+- Commit uitsluitend bedoelde broncode, tests, resources en projectdocumentatie. Geen Secrets, lokale kluizen, logs, NuGet-caches, bin/obj, dist-*, release/ of source-*-testkopieën.
 - Behoud remote bestanden die lokaal ontbreken. Bij 0.8.0 betrof dit `docs/AUDIT-2026-11-11.md`.
 
 ## Commit en push
@@ -27,7 +27,7 @@ Deze werkwijze is op 11 november 2026 uitgevoerd voor Heimora 0.8.0. Raadpleeg d
 
 1. Werk versie, changelog en actuele downloadverwijzingen bij. Appschermen gebruiken de assemblyversie. Het buildscript geeft dezelfde versie via `/DAppVersion=<versie>` aan Inno Setup door.
 2. Voer build, volledige zelftest en installercompilatie uit. Gebruik `build.ps1 -Inno <volledig pad naar ISCC.exe>` als de compiler niet op PATH staat. Een installatie per gebruiker kan onder `%LOCALAPPDATA%/Programs/Inno Setup 6/` staan.
-3. Als een lokale omgevingsbeperking een test blokkeert: noteer dat. Een ge�soleerde deelrun mag aanvullend bewijs leveren, maar verzwak de productietests niet. Controleer de volledige Windows-build op GitHub v��r publicatie.
+3. Als een lokale omgevingsbeperking een test blokkeert: noteer dat. Een geïsoleerde deelrun mag aanvullend bewijs leveren, maar verzwak de productietests niet. Controleer de volledige Windows-build op GitHub vóór publicatie.
 4. Controleer dat `v<versie>` nog niet bestaat. Maak de tag op de exacte geteste commit, niet op een mogelijk inmiddels verschoven branch-head. Overschrijf bestaande tags of downloads niet.
 5. Publiceer previewversies als GitHub pre-release, met concrete wijzigingen, testbewijs en beperkingen. Als de integratie geen release-write ondersteunt, gebruik de normale GitHub-releasepagina in de verbonden browser.
 6. Voeg `Heimora-Setup-<versie>-win-x64.exe` en `SHA256SUMS.txt` toe. Bereken de checksum over precies de bijgevoegde installer; meng geen lokale installer met de checksum van een andere CI-build. Signing en installatieproeven zijn afzonderlijke controles.
@@ -38,11 +38,11 @@ Deze werkwijze is op 11 november 2026 uitgevoerd voor Heimora 0.8.0. Raadpleeg d
 
 - Broncommit: `49d3fe825dd712593c59400bc1a60fba9addcd10`, gepusht naar `main` via de verbonden GitHub-integratie. De terminal kon GitHub niet via DNS bereiken.
 - Vergelijking: 18 gewijzigde/nieuwe bronbestanden; alle blob-SHA's gecontroleerd en ongewijzigde remote bestanden behouden. Geen buildbestanden of secrets gecommit.
-- Windows-CI: https://github.com/CEWIStudio/Heimora/actions/runs/43025981534 - geslaagd, inclusief publiceren, volledige ingebouwde zelftest, installercompilatie en artifact/checksum-stappen.
-- Aanvullende pushcontrole: https://github.com/CEWIStudio/Heimora/actions/runs/43025980965 - geslaagd.
+- Windows-CI: https://github.com/CEWIStudio/Heimora/actions/runs/43025981534 — geslaagd, inclusief publiceren, volledige ingebouwde zelftest, installercompilatie en artifact/checksum-stappen.
+- Aanvullende pushcontrole: https://github.com/CEWIStudio/Heimora/actions/runs/43025980965 — geslaagd.
 - Tag `v0.8.0` wijst naar bovengenoemde broncommit.
 - Gepubliceerde pre-release: https://github.com/CEWIStudio/Heimora/releases/tag/v0.8.0 (release-ID `441718724`).
 - Lokale installer: `release/Heimora-Setup-0.8.0-win-x64.exe`; SHA256 `8f0da08abde6d270d910cd738be587157af9fd238baf62eb3a22de9d8995e2c3`.
-- Nog open: installer en checksum zijn niet als release-assets ge�pload. Bij verificatie waren er nul eigen assets; GitHub toont wel de automatisch gegenereerde bronarchieven. De eerdere browserupload werd geblokkeerd door ontbrekende lokale bestandstoegang.
+- Afgerond: de gebruiker heeft installer en checksum aan de release toegevoegd. Op 11 november 2026 via de GitHub API geverifieerd: beide assets hebben status `uploaded`. De SHA256 van de installer is gelijk aan bovenstaande lokale installerhash. Ook de SHA256 van het checksum-bestand zelf komt overeen met de lokale versie: `59e7f0b744b5bd62258cef5cca86799cc13bf8b76ded4175ca3594f42cc90a3f`. Daarmee hoort de gepubliceerde checksum aantoonbaar bij de gepubliceerde installer. De eerdere browseruploadbeperking heeft geen ontbrekende releasebijlagen meer tot gevolg.
 
 Deze registratie is een momentopname. Lees bij vervolgwerk altijd de actuele GitHub-status opnieuw.
